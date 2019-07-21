@@ -1,37 +1,52 @@
+import os
+
+#----------------------------------------------------------------------------------------------------        
 class Contact:
-    begin='BEGIN:VCARD'
-    version=''
-    name=''
-    fullname=''
-    telephone=''
-    end=''
+    
+    def __init__(self):
+        self.innerlines=list()
 
     def __str__(self):
-        return "{} {} {} {} {} {}\n".format(self.begin, self.version, self.name, self.fullname, self.telephone, self.end)
-        
-        
-#with open('20150331224915.vcf') as f:
-#    lines = f.readlines()
-lines = [line.rstrip('\n') for line in open('20150331224915.vcf')]    
+        str=''
+        for line in self.innerlines:
+            str=str+line+','
+        return str
+#----------------------------------------------------------------------------------------------------        
+def main():        
+    #with open('20150331224915.vcf') as f:
+    #    lines = f.readlines()
+    lines = [line.rstrip('\n') for line in open('input/20150331224915.vcf')]    
+    
+    contactList=list()
+    for line in lines:
+        #print(line, end = '\n')
+        if line.startswith('BEGIN:VCARD'):
+            oneContact=Contact()
+        oneContact.innerlines.append(line)
+        if line.startswith('END:VCARD'):
+            contactList.append(oneContact)
+    print('Total number of contacts : '+str(len(contactList)))
+    for oneContact in contactList:
+        writeOneContactToFile(oneContact)
+        #print(oneContact)
 
-contactList=list()
-for line in lines:
-    #print(line, end = '')
-    if line.startswith('BEGIN:VCARD'):
-        oneContact=Contact()
-        oneContact.begin=line
-    if line.startswith('VERSION:'):
-        oneContact.version=line
-    if line.startswith('N:'):
-        oneContact.name=line
-    if line.startswith('FN:'):
-        oneContact.fullname=line
-    if line.startswith('TEL;CELL:'):
-        oneContact.telephone=line
-    if line.startswith('END:VCARD'):
-        oneContact.end=line
-        #print(oneContact, end='')
-        contactList.append(oneContact)
+#----------------------------------------------------------------------------------------------------        
+def writeOneContactToFile(oneContact):
+    if not os.path.exists('output'):
+        os.makedirs('output')
+    
+    for line in oneContact.innerlines:
+        #print(line, end = '\n')
+        if line.startswith('FN:'):
+            fullName=line[3:]
+    f = open('output/'+fullName+".vcf", 'w')
+    for line in oneContact.innerlines:
+        f.write(line+'\n')
+        #f.write(line)
+    f.close()
 
-for oneContact in contactList:
-    print(oneContact, end='')
+#----------------------------------------------------------------------------------------------------        
+    
+if __name__ == "__main__":
+    main()
+#----------------------------------------------------------------------------------------------------        

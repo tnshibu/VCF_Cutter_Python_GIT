@@ -12,9 +12,16 @@ class Contact:
             str=str+line+','
         return str
 #----------------------------------------------------------------------------------------------------        
-def main():        
-    lines = [line.rstrip('\n') for line in open('input/20150331224915.vcf')]    
+def main():
+    fileNames = next(os.walk('input'))[2]
+    for fileName in fileNames:
+        process_one_file(fileName)
     
+def process_one_file(fileName):
+    lines = [line.rstrip('\n') for line in open('input/'+fileName)]    
+    folderName='output/'+fileName
+    if not os.path.exists(folderName):
+        os.makedirs(folderName)
     contactList=list()
     for line in lines:
         if line.startswith('BEGIN:VCARD'):
@@ -22,20 +29,22 @@ def main():
         oneContact.innerlines.append(line)
         if line.startswith('END:VCARD'):
             contactList.append(oneContact)
-    print('Total number of contacts : '+str(len(contactList)))
+    print('Total number of contacts ('+fileName+'): '+str(len(contactList)))
     for oneContact in contactList:
-        writeOneContactToFile(oneContact)
+        writeOneContactToFile(folderName, oneContact)
 
 #----------------------------------------------------------------------------------------------------        
-def writeOneContactToFile(oneContact):
-    if not os.path.exists('output'):
-        os.makedirs('output')
+def writeOneContactToFile(folderName, oneContact):
+    if not os.path.exists(folderName):
+        os.makedirs(folderName)
     
+    fullName=''
     for line in oneContact.innerlines:
         #print(line, end = '\n')
         if line.startswith('FN:'):
             fullName=line[3:]
-    f = open('output/'+fullName+".vcf", 'w')
+            fullName=fullName.replace('/','_')
+    f = open(folderName+'/'+fullName+".vcf", 'w')
     for line in oneContact.innerlines:
         f.write(line+'\n')
     f.close()
